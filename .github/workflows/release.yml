@@ -1,0 +1,37 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - 'v*.*.*'
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Install ndk
+              id: install-ndk
+              uses: nttld/setup-ndk@v1
+              with:
+                  ndk-version: r26d
+                  add-to-path: false
+
+            - name: Install cross compilation toolchain
+              run: |
+                  rustup target add aarch64-linux-android
+
+            - name: Build
+              run: cargo build --target aarch64-linux-android --release
+              env:
+                  ANDROID_NDK_ROOT: ${{ steps.install-ndk.outputs.ndk-path }}
+                  CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.install-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang
+                  CC_aarch64_linux_android: ${{ steps.install-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android28-clang
+                  AR_aarch64_linux_android: ${{ steps.install-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
+
+            - name: Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: ./target/aarch64-linux-android/release/cmdroid_ngrok
