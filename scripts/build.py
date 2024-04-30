@@ -1,4 +1,5 @@
 import os
+import local
 
 pkg_name = "cmdroid_ngrok"
 working_dir = f"/data/local/tmp/{pkg_name}"
@@ -26,4 +27,4 @@ executor_dst_path = f"{working_dir}/{executor_filename}"
 os.system(f"adb shell rm -r {working_dir}")
 os.system(f"adb shell mkdir {working_dir}")
 os.system(f"adb push {executor_src_path} {executor_dst_path}")
-os.system(f'adb shell "{executor_dst_path}"')
+os.system(f'adb shell "NGROK_AUTHTOKEN={local.NGROK_AUTHTOKEN} {executor_dst_path}"')
